@@ -68,7 +68,7 @@
         }
 
         th {
-            background-color: #007bff;
+            background-color: #cc6600;
             color: white;
             text-align: left;
             padding: 12px;
@@ -100,10 +100,8 @@
     </div>
 
     <div class="content">
-        <h2>The Menu</h2>
-        <p>Welcome to the menu page where all the western foods we have planned will be shown! Come and get some grub.</p>
-        <h2>Live Inventory List</h2>
-        <p>This data is pulled directly from Google Sheets.</p>
+        <h2>The Western Menu</h2>
+        <p>This is what we've cooked up for you! Now you can plan what you want to try first.</p>
 
         <table id="data-table">
             <thead>
@@ -151,7 +149,7 @@
 
                     tr.innerHTML = `
                         <td><strong>${name}</strong></td>
-                        <td>$${price}</td>
+                        <td>${price}</td>
                         <td>${stock}</td>
                     `;
                     
