@@ -60,6 +60,34 @@
             background: rgba(255, 255, 255, 0.95);
             padding: 20px;
             border-radius: 10px;
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+            text-align: left;
+            padding: 12px;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .loading {
+            font-style: italic;
+            color: #888;
+        }
+            
     </style>
 </head>
 <body>
@@ -74,7 +102,67 @@
     <div class="content">
         <h2>The Menu</h2>
         <p>Welcome to the menu page where all the western foods we have planned will be shown! Come and get some grub.</p>
+        <h2>Live Inventory List</h2>
+        <p>This data is pulled directly from Google Sheets.</p>
+
+        <table id="data-table">
+            <thead>
+                <tr>
+                    <th>Item Name</th>
+                    <th>Price</th>
+                    <th>Availability</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <tr>
+                    <td colspan="3" class="loading">Loading data from Google Sheets...</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
+    
+    <script>
+        // REPLACE THIS with your actual Sheet ID
+        const SHEET_ID = 'YOUR_SHEET_ID_HERE';
+        // Note: Use 'gviz/tq' to get the data in a usable JSON format
+        const FULL_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+
+        fetch(FULL_URL)
+            .then(res => res.text())
+            .then(data => {
+                // Google adds some extra text at the start; we strip it to get valid JSON
+                const temp = data.substring(47).slice(0, -2);
+                const json = JSON.parse(temp);
+                const rows = json.table.rows;
+                const tableBody = document.getElementById('table-body');
+                
+                // Clear the "Loading..." message
+                tableBody.innerHTML = '';
+
+                // Loop through each row in the Google Sheet
+                rows.forEach(rowData => {
+                    const tr = document.createElement('tr');
+                    
+                    // rowData.c[0] = Column A, rowData.c[1] = Column B, etc.
+                    // .v is the "value" of the cell
+                    const name = rowData.c[0] ? rowData.c[0].v : 'N/A';
+                    const price = rowData.c[1] ? rowData.c[1].v : '0.00';
+                    const stock = rowData.c[2] ? rowData.c[2].v : 'Unknown';
+
+                    tr.innerHTML = `
+                        <td><strong>${name}</strong></td>
+                        <td>$${price}</td>
+                        <td>${stock}</td>
+                    `;
+                    
+                    tableBody.appendChild(tr);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching sheet:', error);
+                document.getElementById('table-body').innerHTML = '<tr><td colspan="3">Error loading data. Check console or Sheet permissions.</td></tr>';
+            });
+    </script>
 
 </body>
 </html>
