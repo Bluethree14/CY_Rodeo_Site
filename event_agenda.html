@@ -1,1 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canyon Meadows - Agenda</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            color: #3e2723;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            background-image: url('DinnerCM.png');
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
 
+        .saloon-sign {
+            border: 8px double #5d4037;
+            background-color: #efebe9;
+            padding: 20px;
+            display: inline-block;
+            margin-bottom: 20px;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+        }
+
+        h1 { font-size: 2.5rem; margin: 0; text-transform: uppercase; letter-spacing: 3px; }
+
+        .search-container { margin-bottom: 20px; }
+
+        #agendaSearch {
+            padding: 12px;
+            width: 80%;
+            max-width: 400px;
+            border: 3px solid #5d4037;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            background-color: #fffaf0;
+        }
+
+        .content {
+            max-width: 900px;
+            margin: 20px auto;
+            background: rgba(255, 255, 255, 0.92);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+
+        th { background-color: #5d4037; color: #efebe9; padding: 15px; text-transform: uppercase; }
+
+        td { padding: 15px; border-bottom: 1px solid #d7ccc8; text-align: left; }
+
+        tr:hover { background-color: #f5f5f5; }
+
+        .date-cell { font-weight: bold; color: #bf360c; white-space: nowrap; }
+        .time-cell { color: #5d4037; font-style: italic; }
+        .event-title { font-size: 1.1rem; color: #2e1f1c; }
+
+        @media (max-width: 600px) {
+            th:nth-child(2), td:nth-child(2) { display: none; } /* Hide time on small phones if needed */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="saloon-sign">
+        <h1>Town Agenda</h1>
+        <p>Canyon Meadows Events</p>
+    </div>
+
+    <div class="content">
+        <div class="search-container">
+            <input type="text" id="agendaSearch" placeholder="Search events, dates, or locations..." onkeyup="filterAgenda()">
+        </div>
+
+        <table id="agenda-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Event</th>
+                    <th>Location</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <tr>
+                    <td colspan="4" style="text-align:center">Gathering the scrolls...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Use your Sheet ID here
+        const SHEET_ID = '19dJEcZ6meixsjRtiAlLk_u0B_HBcajVw7C-KPLcHmRU';
+        const FULL_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+        
+        let allEvents = [];
+
+        fetch(FULL_URL)
+            .then(res => res.text())
+            .then(data => {
+                const temp = data.substring(47).slice(0, -2);
+                const json = JSON.parse(temp);
+                allEvents = json.table.rows;
+                displayAgenda(allEvents);
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('table-body').innerHTML = '<tr><td colspan="4">The stagecoach was delayed (Error loading data).</td></tr>';
+            });
+
+        function displayAgenda(rows) {
+            const tableBody = document.getElementById('table-body');
+            tableBody.innerHTML = '';
+
+            rows.forEach(rowData => {
+                // Mapping: Col A=Date, Col B=Time, Col C=Event, Col D=Location
+                const rawDate = rowData.c[0] ? rowData.c[0].f || rowData.c[0].v : '';
+                const time    = rowData.c[1] ? rowData.c[1].v : '';
+                const event   = rowData.c[2] ? rowData.c[2].v : '';
+                const loc     = rowData.c[3] ? rowData.c[3].v : '';
+
+                if (event) { // Only show if there is an event name
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="date-cell">${rawDate}</td>
+                        <td class="time-cell">${time}</td>
+                        <td class="event-title"><strong>${event}</strong></td>
+                        <td>📍 ${loc}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                }
+            });
+
+            if (tableBody.innerHTML === '') {
+                tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center">No events found in the desert.</td></tr>';
+            }
+        }
+
+        function filterAgenda() {
+            const s = document.getElementById('agendaSearch').value.toLowerCase();
+            const filtered = allEvents.filter(row => {
+                // Check all 4 columns for the search string
+                const date = (row.c[0] ? (row.c[0].f || row.c[0].v) : '').toString().toLowerCase();
+                const time = (row.c[1] ? row.c[1].v : '').toString().toLowerCase();
+                const title = (row.c[2] ? row.c[2].v : '').toString().toLowerCase();
+                const loc = (row.c[3] ? row.c[3].v : '').toString().toLowerCase();
+                
+                return date.includes(s) || time.includes(s) || title.includes(s) || loc.includes(s);
+            });
+            displayAgenda(filtered);
+        }
+    </script>
+</body>
+</html>
