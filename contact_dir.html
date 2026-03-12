@@ -139,16 +139,17 @@
                     
                     // rowData.c[0] = Column A, rowData.c[1] = Column B, etc.
                     // .v is the "value" of the cell
-                    const name = rowData.c[0] ? rowData.c[0].v : 'N/A';
+                    const name = rowData.c[0] ? rowData.c[0].v : 'pictures/default.png';
                     const price = rowData.c[1] ? rowData.c[1].v : '0.00';
                     const stock = rowData.c[2] ? rowData.c[2].v : 'Unknown';
                     const responsible = rowData.c[3] ? rowData.c[3].v : 'Unknown';
 
                     tr.innerHTML = `
-                        <td><strong>${name}</strong></td>
+                        <td><img src="${name}" alt="${name}" style="width:80px; height:80px; object-fit:cover;"></td>
                         <td>${price}</td>
                         <td>${stock}</td>
                         <td>${responsible}</td>
+                        <td>$${rowData.c[1].v}</td>
                     `;
                     
                     tableBody.appendChild(tr);
