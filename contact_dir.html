@@ -1,1 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canyon Meadows - Contacts</title>
+    <style>
+        /* Shared Styles */
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            color: #3e2723;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
 
+        .saloon-sign {
+            border: 8px double #5d4037;
+            background-color: #efebe9;
+            padding: 20px;
+            display: inline-block;
+            margin-bottom: 20px;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+        }
+
+        nav {
+            margin-top: 15px;
+            border-top: 2px solid #5d4037;
+            padding-top: 10px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #795548;
+            font-weight: bold;
+            margin: 0 15px;
+            font-size: 1.2rem;
+        }
+
+        .nav-link:hover {
+            color: #bf360c;
+        }
+
+        .content {
+            max-width: 800px;
+            margin: 40px auto;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th {
+            background-color: #cc6600;
+            color: white;
+            text-align: center;
+            padding: 12px;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .loading {
+            font-style: italic;
+            color: #888;
+        }
+            
+    </style>
+</head>
+<body>
+
+    <div class="saloon-sign">
+        <h1>Canyon Meadows</h1>
+      <p>Important contacts durring your visit.</p>
+        <nav>
+            <a href="index.html" class="nav-link" title="Home">🤠Home</a>
+        </nav>
+    </div>
+
+    <div class="content">
+        <table id="data-table">
+            <thead>
+                <tr>
+                    <th> </th>
+                    <th>Name</th>
+                    <th>Phone or email</th>
+                    <th>Responsibility</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <tr>
+                    <td colspan="4" class="loading">Loading data from Google Sheets...</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>These are the people keeping the show on the road!</p>
+    </div>
+    
+    <script>
+        // REPLACE THIS with your actual Sheet ID
+        const SHEET_ID = '1d-0NNHDz-wpYmDJot06FG-zxC3WH_QdsVyK34MSpQlY';
+        // Note: Use 'gviz/tq' to get the data in a usable JSON format
+        const FULL_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+
+        fetch(FULL_URL)
+            .then(res => res.text())
+            .then(data => {
+                // Google adds some extra text at the start; we strip it to get valid JSON
+                const temp = data.substring(47).slice(0, -2);
+                const json = JSON.parse(temp);
+                const rows = json.table.rows;
+                const tableBody = document.getElementById('table-body');
+                
+                // Clear the "Loading..." message
+                tableBody.innerHTML = '';
+
+                // Loop through each row in the Google Sheet
+                rows.forEach(rowData => {
+                    const tr = document.createElement('tr');
+                    
+                    // rowData.c[0] = Column A, rowData.c[1] = Column B, etc.
+                    // .v is the "value" of the cell
+                    const name = rowData.c[0] ? rowData.c[0].v : 'N/A';
+                    const price = rowData.c[1] ? rowData.c[1].v : '0.00';
+                    const stock = rowData.c[2] ? rowData.c[2].v : 'Unknown';
+                    const responsible = rowData.c[3] ? rowData.c[3].v : 'Unknown';
+
+                    tr.innerHTML = `
+                        <td><strong>${name}</strong></td>
+                        <td>${price}</td>
+                        <td>${stock}</td>
+                        <td>${responsible}</td>
+                    `;
+                    
+                    tableBody.appendChild(tr);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching sheet:', error);
+                document.getElementById('table-body').innerHTML = '<tr><td colspan="4">Error loading data. Check console or Sheet permissions.</td></tr>';
+            });
+    </script>
+
+</body>
+</html>
