@@ -36,18 +36,43 @@
             margin-top: 15px;
             border-top: 2px solid #5d4037;
             padding-top: 10px;
+
+            /* This aligns the boxes in a clean row that wraps on mobile */
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
         }
 
         .nav-link {
             text-decoration: none;
-            color: #795548;
+            color: #3e2723; /* Darker brown for readability #795548; */
             font-weight: bold;
-            margin: 0 15px;
+            /* margin: 0 15px; */
             font-size: 1.2rem;
+
+            /* The "Box" Styling */
+            background-color: #f5f5dc; /* Beige/Parchment color */
+            border: 2px solid #5d4037;
+            padding: 5px 5px;
+            border-radius: 2px;
+    
+            /* Shadow for a 3D effect */
+            box-shadow: 2px 2px 2px rgba(0,0,0,0.2);
+    
+            /* Smooth hover transition */
+            transition: all 0.2s ease;
+    
+            /* Ensures buttons don't stretch weirdly */
+            display: inline-block;
         }
 
         .nav-link:hover {
-            color: #bf360c;
+            /* color: #bf360c; */
+            color: #ffffff;
+            background-color: #795548; /* Darker wood color on hover */
+            transform: translateY(-2px); /* Slight "lift" effect */
+            box-shadow: 4px 4px 8px rgba(0,0,0,0.3);
         }
 
         .content {
