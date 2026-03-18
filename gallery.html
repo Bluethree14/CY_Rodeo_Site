@@ -1,1 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canyon Meadows - Gallery & Agenda</title>
+    <style>
+        /* --- THEME STYLES --- */
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            color: #3e2723;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            background-color: #efebe9;
+            background-image: url('DinnerCM.png'); /* Ensure this file exists in your folder */
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+        }
 
+        .saloon-sign {
+            border: 8px double #5d4037;
+            background-color: #efebe9;
+            padding: 20px;
+            display: inline-block;
+            margin-bottom: 20px;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+        }
+
+        h1 { font-size: 2.5rem; margin: 0; text-transform: uppercase; letter-spacing: 3px; }
+
+        /* --- NAVIGATION BOXES --- */
+        nav {
+            margin-top: 15px;
+            border-top: 2px solid #5d4037;
+            padding-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #3e2723;
+            font-weight: bold;
+            background-color: #f5f5dc;
+            border: 3px solid #5d4037;
+            padding: 10px 15px;
+            transition: all 0.2s ease;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .nav-link:hover {
+            background-color: #795548;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* --- GALLERY GRID --- */
+        .content {
+            max-width: 1000px;
+            margin: 40px auto;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .photo-card {
+            background: #fff;
+            border: 4px double #5d4037;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .photo-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            cursor: zoom-in;
+            border: 1px solid #ddd;
+        }
+
+        /* --- LIGHTBOX STYLES --- */
+        .lightbox {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        #lightbox-img {
+            max-width: 90%;
+            max-height: 75%;
+            border: 5px solid white;
+        }
+
+        #lightbox-caption {
+            color: white;
+            margin-top: 15px;
+            font-size: 1.2rem;
+            max-width: 80%;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px; right: 30px;
+            color: white; font-size: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="saloon-sign">
+        <h1>Canyon Meadows</h1>
+        <nav>
+            <a href="index.html" class="nav-link">🤠 Home</a>
+            <a href="menu.html" class="nav-link">Food Menu</a>
+            <a href="event_agenda.html" class="nav-link">🗓️ Agenda</a>
+            <a href="gallery.html" class="nav-link">📷 Gallery</a>
+        </nav>
+    </div>
+
+    <div class="content">
+        <h2>Town Gallery</h2>
+        <p>Click any photo to enlarge it, partner!</p>
+        
+        <div id="photo-gallery" class="gallery-grid">
+            <p>Loading the frontier photos...</p>
+        </div>
+    </div>
+
+    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+        <span class="close-btn">&times;</span>
+        <img id="lightbox-img" src="">
+        <div id="lightbox-caption"></div>
+    </div>
+
+    <script>
+        // 1. YOUR GOOGLE SHEET ID (Ensure it's published to web!)
+        const SHEET_ID = '1YKNQ8wfrU2qJ3WVw9WIZi8xxTuQe5fedvSklvYWutsE';
+        const FULL_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+
+        // 2. FETCH DATA
+        fetch(FULL_URL)
+            .then(res => res.text())
+            .then(data => {
+                const temp = data.substring(47).slice(0, -2);
+                const json = JSON.parse(temp);
+                displayGallery(json.table.rows);
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('photo-gallery').innerHTML = "Failed to load photos.";
+            });
+
+        // 3. RENDER GALLERY
+        function displayGallery(rows) {
+            const container = document.getElementById('photo-gallery');
+            container.innerHTML = '';
+
+            rows.forEach(row => {
+                // Column A: URL, Column B: Title, Column C: Description
+                const imgUrl = row.c[0] ? row.c[0].v : '';
+                const title  = row.c[1] ? row.c[1].v : 'Untitled';
+                const desc   = row.c[2] ? row.c[2].v : '';
+
+                if (imgUrl) {
+                    const card = document.createElement('div');
+                    card.className = 'photo-card';
+                    card.innerHTML = `
+                        <img src="${imgUrl}" alt="${title}" onclick="openLightbox('${imgUrl}', '${title} - ${desc}')">
+                        <h3>${title}</h3>
+                        <p>${desc}</p>
+                    `;
+                    container.appendChild(card);
+                }
+            });
+        }
+
+        // 4. LIGHTBOX FUNCTIONS
+        function openLightbox(url, caption) {
+            document.getElementById('lightbox-img').src = url;
+            document.getElementById('lightbox-caption').innerText = caption;
+            document.getElementById('lightbox').style.display = 'flex';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
