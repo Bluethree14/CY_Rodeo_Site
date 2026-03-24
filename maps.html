@@ -1,1 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canyon Meadows - Places to Be</title>
+    <style>
+        /* --- THEME STYLES --- */
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            color: #3e2723;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            background-color: #efebe9;
+            background-image: url('pictures/Background_001.png'); /* Ensure this file exists in your folder */
+            background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+        }
 
+        .saloon-sign {
+            border: 8px double #5d4037;
+            background-color: #efebe9;
+            padding: 20px;
+            display: inline-block;
+            margin-bottom: 20px;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+        }
+
+        h1 { font-size: 2.5rem; margin: 0; text-transform: uppercase; letter-spacing: 3px; }
+
+        /* --- NAVIGATION BOXES --- */
+        nav {
+            margin-top: 15px;
+            border-top: 2px solid #5d4037;
+            padding-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #3e2723;
+            font-weight: bold;
+            background-color: #f5f5dc;
+            border: 3px solid #5d4037;
+            padding: 10px 15px;
+            transition: all 0.2s ease;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .nav-link:hover {
+            background-color: #795548;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+    #map {
+        height: 400px;
+        width: 100%;
+        border: 4px double #5d4037;
+        margin-top: 20px;
+    }
+    .leaflet-popup-content-wrapper {
+        font-family: 'Courier New', Courier, monospace;
+        background: #efebe9;
+        color: #3e2723;
+    }
+</style>
+
+<div class="content">
+    <h2>Local Landmarks</h2>
+    <div id="map"></div>
+</div>
+
+<script>
+    // Initialize the map centered on a specific spot (e.g., Calgary area)
+    const map = L.map('map').setView([51.0447, -114.0719], 11);
+
+    // Add a "Old West" looking map style (CartoDB Voyager)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    // Reuse your existing Google Sheets fetch logic
+    fetch(FULL_URL) 
+        .then(res => res.text())
+        .then(data => {
+            const temp = data.substring(47).slice(0, -2);
+            const json = JSON.parse(temp);
+            addMarkersToMap(json.table.rows);
+        });
+
+    function addMarkersToMap(rows) {
+        rows.forEach(row => {
+            const name = row.c[0] ? row.c[0].v : 'Point of Interest';
+            const lat  = row.c[1] ? parseFloat(row.c[1].v) : null;
+            const lng  = row.c[2] ? parseFloat(row.c[2].v) : null;
+            const info = row.c[3] ? row.c[3].v : '';
+
+            if (lat && lng) {
+                // Create a marker and bind a popup to it
+                L.marker([lat, lng]).addTo(map)
+                    .bindPopup(`<b>${name}</b><br>${info}`);
+            }
+        });
+    }
+</script>
+
+       
+
+        
+
+
+
+      
+</body>
+</html>
